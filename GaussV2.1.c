@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<conio.h> 
 #include<math.h>
+#include<time.h>
 
 struct matrix
 { 
@@ -9,6 +10,49 @@ struct matrix
 	double *free_coefficients;
 
 };
+
+void fill_matrix(int pull,double* mat,double* free_coefficients,int x, int y)
+{
+	if (pull == 1)
+	{
+
+		printf("Write matrix \n");
+
+
+	for (int i = 0; i < x; i++)// ввод матрицы
+	{
+		for(int j = 0; j < y; j++)
+		{
+			scanf("%lf",&mat[i*x+j]) ;
+		}
+	}
+
+	printf("Write free coefficients of system in the same order:\n");
+	for (int i = 0; i < x; i++)// ввод матрицы
+	{	
+		scanf("%lf",&free_coefficients[i]) ;	
+	}
+
+	}else
+
+	{
+
+		for (int i = 0; i < x; i++)// ввод матрицы
+		{
+			for(int j = 0; j < y; j++)
+			{
+				mat[i*x+j] = rand()%10+1;
+			}
+		}
+
+		printf("Write free coefficients of system in the same order:\n");
+		for (int i = 0; i < x; i++)// ввод матрицы
+		{	
+			free_coefficients[i] = rand()%10+1 ;	
+		}
+
+	}
+}
 
 void swap (double *mat,int a,int b,int x ,int y) //в матрице mat размером x*y меняет местами строку a и b 
 	{
@@ -26,7 +70,7 @@ void subs(double *mat,int work,int rez,double term,double del) // метод, в
 		mat[rez] = mat[rez] - ((mat[work]/del)*term);
 	
 }
-void Gauss_check_answer(double *mat,double *free,int x, int y)
+void Gauss_check_answer(double *mat,double *free,double* answers,int x, int y)
 {
 	double del = 1.0;
 	int flag = 0;
@@ -52,6 +96,7 @@ void Gauss_check_answer(double *mat,double *free,int x, int y)
 			for (int j =0;j<x;j++)
 			{
 				del = mat[j*y+j];
+				answers[j] = free[j]/del;
 				printf("x%d = %lf \n",j,free[j]/del);
 			}
 			break;
@@ -116,13 +161,11 @@ void Gauss(double *mat,double *free,int x,int y)
 	for (int i = 0;i<x-1;i++) // обратный ход Гаусса
 	{	
 		double del  = mat[(x-i)*y-1-i ];
-		printf("del-------->%lf\n", del );
 		if ((del > 0.000001) || (del < -0.000001))
 		{
 			for (int j = i+1;j<x;j++)
 			{
 				double term = mat[(x-j)*y-1-i];
-				printf("term-------->%lf \n",term);
 				mat[(x-j)*y-1-i] =mat[(x-j)*y-1-i] - term;
 				subs(free,x-1-i,x-1-j,term,del);
 
@@ -134,9 +177,12 @@ void Gauss(double *mat,double *free,int x,int y)
 };
 
 int main(){
-	int x,y;	
+	int x,y;
+	int pull = 0;
+	double sum = 0.0;	
 	printf("write number of lines and coloumns \n");
 	scanf("%d %d",&x,&y);
+	srand(time(NULL));
 	struct matrix mat;
 	if ((mat.matrix = malloc(x*y*sizeof(double)))== NULL) 
 	{
@@ -145,55 +191,83 @@ int main(){
         exit(1);
 	}
 	mat.free_coefficients = (double*) malloc(x*sizeof(double));
+	double *xes,*answers;
+	xes = (double*) malloc(y*sizeof(double));
+	answers = (double*) malloc(y*sizeof(double));
 
-	printf("Write matrix \n");
 
+	printf("To create random matrix insert 0,to fill it yourself insert 1, to check Gauss Gass_accuracy insert 2 \n");
+	scanf("%d",&pull);
 
-	for (int i = 0; i < x; i++)// ввод матрицы
+	if ((pull == 1) || (pull == 0))
 	{
-		for(int j = 0; j < y; j++)
-		{
-			scanf("%lf",&mat.matrix[i*x+j]) ;
+		fill_matrix(pull,mat.matrix,mat.free_coefficients,x,y);
+
+		
+		printf("\n _______________________________________________________________________________\n ");
+
+		
+
+		Gauss(mat.matrix,mat.free_coefficients,x,y); // применение метода Гаусса
+
+		
+		for (int i = 0; i < x; i++) // вывод конечной матрицы
+		{ 
+			printf("\n");
+			for(int j = 0; j < y; j++)
+			{
+				printf("%lf,\t",mat.matrix[i*x+j]);
+			}
+			printf("%lf",mat.free_coefficients[i]);
 		}
+		printf("\n");
+		Gauss_check_answer(mat.matrix,mat.free_coefficients,answers,x,y);
 	}
-
-	printf("Write free coefficients of system in the same order:\n");
-	for (int i = 0; i < x; i++)// ввод матрицы
-	{	
-		scanf("%lf",&mat.free_coefficients[i]) ;	
-	}	
-
-	for (int i = 0; i < x; i++)//вывод матрицы со свободными коэффициентами
+	else
 	{
-		printf("\n");
-		for(int j = 0; j < y; j++)
+		printf("Now please insert your own answers.Matrix will be generated autimatically and you'll see dispersion of that Gauss method programm.\n");
+		for (int i = 0;i<y;i++)
 		{
-			printf("%lf,\t",mat.matrix[i*x+j]);
+			 scanf("%lf",&xes[i]); 
 		}
-		printf("%lf",mat.free_coefficients[i]);
-	}
-	printf("\n _______________________________________________________________________________\n ");
 
-	
-
-	Gauss(mat.matrix,mat.free_coefficients,x,y); // применение метода Гаусса
-
-	
-	for (int i = 0; i < x; i++) // вывод конечной матрицы
-	{ 
-		printf("\n");
-		for(int j = 0; j < y; j++)
+		for (int i = 0; i < x; i++)// ввод матрицы
 		{
-			printf("%lf,\t",mat.matrix[i*x+j]);
+			for(int j = 0; j < y; j++)
+			{
+				mat.matrix[i*x+j] = rand()%10+1;
+			}
 		}
-		printf("%lf",mat.free_coefficients[i]);
-	}
-	printf("\n");
+		for (int i = 0; i < x; i++)// ввод матрицы
+		{
+			for(int j = 0; j < y; j++)
+			{
+				sum += mat.matrix[i*x+j]*xes[j];
+			}
+			mat.free_coefficients[i] = sum;
+			sum = 0.0;
+		}
+		Gauss(mat.matrix,mat.free_coefficients,x,y);
+		Gauss_check_answer(mat.matrix,mat.free_coefficients,answers,x,y);
+		for (int i=0;i<y;i++)
+		{
+			printf("%lf\t",answers[i]);
+		}
+		printf("\n");
+		for (int i = 0;i<y;i++)
+		{
+			sum+= (xes[i]-answers[i])*(xes[i]-answers[i]);
+		}
+		double dispersion = sqrt(sum/y);
+		printf("Gauss method dispersion is %lf\n",dispersion);
 
-	Gauss_check_answer(mat.matrix,mat.free_coefficients,x,y);
+	}
+
+
 	free(mat.matrix);
 	free(mat.free_coefficients);
-
+	free(xes);
+	free(answers);
 	getch();
 
 	return 0;
